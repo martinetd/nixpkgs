@@ -24860,9 +24860,7 @@ in
 
   angband = callPackage ../games/angband { };
 
-  anki = python3Packages.callPackage ../games/anki {
-    inherit (darwin.apple_sdk.frameworks) CoreAudio;
-  };
+  anki = callPackage ../games/anki { };
 
   armagetronad = callPackage ../games/armagetronad { };
 
