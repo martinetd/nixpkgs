@@ -6,23 +6,29 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "ankisyncd";
-  version = "2.1.0";
+  date = "20200905";
+  rev = "68776c21b5c506505902b98957bf3ccba139cabd";
+  version = "${date}-${rev}";
   src = fetchFromGitHub {
-    owner = "tsudoko";
+    owner = "ankicommunity";
     repo = "anki-sync-server";
-    rev = version;
-    sha256 = "6a140afa94fdb1725fed716918875e3d2ad0092cb955136e381c9d826cc4927c";
+    rev = rev;
+    sha256 = "19br2ba2jarmjd01prlph78qqvy6f5rbpq5ag78vz3x70k7z9yiq";
   };
   format = "other";
+
+  patchPhase = ''
+    rm -f Makefile
+  '';
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/${python3.sitePackages}
 
-    cp -r ankisyncd utils ankisyncd.conf $out/${python3.sitePackages}
+    cp -r src/ankisyncd src/utils src/ankisyncd.conf $out/${python3.sitePackages}
     mkdir $out/share
-    cp ankisyncctl.py $out/share/
+    cp src/ankisyncctl.py $out/share/
 
     runHook postInstall
   '';
