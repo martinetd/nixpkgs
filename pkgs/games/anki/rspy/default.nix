@@ -36,6 +36,7 @@ rustPlatform.buildRustPackage {
   ];
 
   nativeBuildInputs = [
+    maturin
     rustfmt
     pkgconfig
     perl
@@ -59,7 +60,7 @@ rustPlatform.buildRustPackage {
 
     HOME=$NIX_BUILD_TOP
     FTL_TEMPLATE_DIRS="../qt/ftl" QT_FTL_LOCALES="../qt/ftl/repo/desktop" \
-        ${maturin}/bin/maturin build -o $out --release --strip
+        maturin build -o $out --release --strip
   '';
 
   # Maturin installs by itself and this would fail anyways
