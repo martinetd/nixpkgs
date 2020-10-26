@@ -1,58 +1,62 @@
 { stdenv
 , fetchFromGitHub
 , callPackage
-, pythonPackages
+, runCommand
 , python3Packages
-, pkgs
 }:
 
 let
-  version = "2.1.29";
+  version = "2.1.35";
   pname = "anki";
 
-  # src = fetchFromGitHub {
-  #   owner = "ankitects";
-  #   repo = pname;
-  #   rev = version;
-  #   sha256 = "14hq3n6yw1n35d5zx5w22zr281700bbid0kc1i2vfd1wbvj65nnc";
-  # };
+  srcAnki = fetchFromGitHub {
+    owner = "ankitects";
+    repo = pname;
+    rev = version;
+    sha256 = "0abz21yay9ljfimn6gmn29gxp5iflnxpvzjk219s9yb6nwv2w7li";
+  };
+  srcDesktopFtl = fetchFromGitHub {
+    owner = "ankitects";
+    repo = "anki-desktop-ftl";
+    rev = "f56e959e00a65a9c2d059e8396a2d582b218ee50";
+    sha256 = "07frldkm7vlxgrhjvg3fcx82ramvpla4191m1k2n1ydxq32hjlcn";
+  };
+  srcDesktopI18n = fetchFromGitHub {
+    owner = "ankitects";
+    repo = "anki-desktop-i18n";
+    rev = "a93ccefd58d5ff49ecf6cae746d671dfc23248e9";
+    sha256 = "sha256-0QMoirPziZq71lrIeWgL/N43WlLYPZFUa6GfvJ5FfYI=";
+  };
+  srcCoreI18n = fetchFromGitHub {
+    owner = "ankitects";
+    repo = "anki-core-i18n";
+    rev = "fbda2ed1fdd176fa4eed7e397a6690d1a8453b75";
+    sha256 = "09c1251kacfxd0ada48mh85vvpny8av6nxbr33w1cwrfhlrsax5s";
+  };
+  # do common preprocessing here instead of preBuild or similar to share
+  # the same source for subpackages
+  src = runCommand "anki-source" { inherit srcAnki srcDesktopFtl srcDesktopI18n srcCoreI18n version; } ''
+    cp -a "${srcAnki}/." "$out"
+    chmod u+w "$out/qt/ftl" "$out/qt/po" "$out/rslib/ftl" "$out/meta"
+    cp -a "${srcDesktopFtl}" "$out/qt/ftl/repo"
+    cp -a "${srcDesktopI18n}" "$out/qt/po/repo"
+    cp -a "${srcCoreI18n}" "$out/rslib/ftl/repo"
+    echo "${version}" > "$out/meta/buildhash"
+  '';
 
-  src = /home/atemu/Projects/anki;
+  rspy = callPackage ./rspy { inherit src version; };
 
   ts = callPackage ./ts { src = src + "/ts"; };
-
-  # rslib = callPackage ./rslib { inherit src; };
-
-  rspy = pythonPackages.callPackage ./rspy { inherit src; };
 
   orjson = python3Packages.callPackage ./orjson { };
 
   pylib = python3Packages.callPackage ./pylib { inherit src orjson; };
 
-# in
-
-# rspy
-anki =
-pythonPackages.buildPythonApplication {
-  inherit pname version;
-
-  src = pkgs.runCommand "source" { inherit src; ts = ts.package; } ''
-    mkdir -p $out
-    cp -r $src/. $out
-    chmod -R u+rw $out
-    rm -r $out/ts
-    ln -s $ts/lib/node_modules/anki/ $out/ts
-  '';
-
-  nativeBuildInputs = with pkgs; [ python3 git maturin ];
-  buildPhase = ''
-    make build
-  '';
-}
-;
-
 in
 
-{
-  inherit anki rspy ts orjson pylib;
+python3Packages.buildPythonApplication {
+  inherit src pname version rspy orjson;
+  installPhase = ''
+    cp -r "${rspy}" $out
+  '';
 }
