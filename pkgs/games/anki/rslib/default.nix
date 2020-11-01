@@ -8,7 +8,7 @@
 
 let
   pname = "ankirslib";
-  version = "2.1.28";
+  version = "2.1.35";
 
   desktopFtl = fetchFromGitHub {
     owner = "ankitects";

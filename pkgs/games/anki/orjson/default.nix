@@ -1,6 +1,6 @@
 { buildPythonPackage
 , fetchFromGitHub
-, pkgs
+, maturin
 }:
 let
   pname = "orjson";
@@ -19,6 +19,6 @@ buildPythonPackage {
 
   format = "pyproject";
 
-  nativeBuildInputs = [ pkgs.maturin ];
-  buildInputs = [ pkgs.maturin ];
+  nativeBuildInputs = [ maturin ];
+  buildInputs = [ maturin ];
 }

@@ -4236,6 +4236,10 @@ in {
 
   orderedset = callPackage ../development/python-modules/orderedset { };
 
+  orjson = callPackage ../development/python-modules/orjson {
+    inherit (pkgs) rustPlatform;
+  };
+
   orm = callPackage ../development/python-modules/orm { };
 
   ortools = (toPythonModule (pkgs.or-tools.override { inherit (self) python; })).python;
