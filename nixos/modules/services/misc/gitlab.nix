@@ -229,6 +229,7 @@ in {
     (mkRenamedOptionModule [ "services" "gitlab" "stateDir" ] [ "services" "gitlab" "statePath" ])
     (mkRenamedOptionModule [ "services" "gitlab" "backupPath" ] [ "services" "gitlab" "backup" "path" ])
     (mkRemovedOptionModule [ "services" "gitlab" "satelliteDir" ] "")
+    (mkRemovedOptionModule [ "services" "gitlab" "logrotate" "extraConfig" ] "Modify services.logrotate.settings.gitlab directly instead")
   ];
 
   options = {
@@ -849,15 +850,6 @@ in {
           default = 30;
           description = "How many rotations to keep.";
         };
-
-        extraConfig = mkOption {
-          type = types.lines;
-          default = "";
-          description = ''
-            Extra logrotate config options for this path. Refer to
-            <link xlink:href="https://linux.die.net/man/8/logrotate"/> for details.
-          '';
-        };
       };
 
       extraConfig = mkOption {
@@ -986,7 +978,6 @@ in {
           rotate = cfg.logrotate.keep;
           copytruncate = true;
           compress = true;
-          extraConfig = cfg.logrotate.extraConfig;
         };
       };
     };
