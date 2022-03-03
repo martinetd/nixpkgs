@@ -98,6 +98,18 @@ let
       description = "Push notifications to inform users of new messages or other pertinent information even when they have no XMPP clients online";
     };
 
+    cloud_notify_priority_tag = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Push notifications to inform users of new messages or other pertinent information even when they have no XMPP clients online";
+    };
+
+    cloud_notify_filters = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Push notifications to inform users of new messages or other pertinent information even when they have no XMPP clients online";
+    };
+
     pep = mkOption {
       type = types.bool;
       default = true;
