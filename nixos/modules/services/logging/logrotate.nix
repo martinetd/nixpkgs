@@ -108,6 +108,25 @@ in
           or settings common to all further files settings.
           Refer to <link xlink:href="https://linux.die.net/man/8/logrotate"/> for details.
         '';
+        example = literalExpression ''
+          {
+            # global options
+            header = {
+              dateext = true;
+            };
+            # example custom files
+            "/var/log/mylog.log" = {
+              frequency = "daily";
+              rotate = 3;
+            };
+            "multiple paths" = {
+               files = [
+                "/var/log/first*.log"
+                "/var/log/second.log"
+              ];
+            };
+          };
+          '';
         type = types.attrsOf (types.submodule ({ name, ... }: {
           freeformType = with types; attrsOf (nullOr (oneOf [ int bool str ]));
 
