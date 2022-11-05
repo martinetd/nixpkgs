@@ -16,7 +16,7 @@ Co-Authored-By: Florian Klink <flokli@flokli.de>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/core/systemd.pc.in b/src/core/systemd.pc.in
-index 5932a21b5b..20bf8e316d 100644
+index 5932a21b5be1..20bf8e316d1d 100644
 --- a/src/core/systemd.pc.in
 +++ b/src/core/systemd.pc.in
 @@ -11,7 +11,7 @@

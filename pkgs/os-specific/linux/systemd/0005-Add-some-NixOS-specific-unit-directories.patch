@@ -14,7 +14,7 @@ Also, remove /usr and /lib as these don't exist on NixOS.
  2 files changed, 6 insertions(+), 19 deletions(-)
 
 diff --git a/src/basic/path-lookup.c b/src/basic/path-lookup.c
-index 1f4331a8bf..4b9a8ae26e 100644
+index 36f386254b72..a968d28dfcfc 100644
 --- a/src/basic/path-lookup.c
 +++ b/src/basic/path-lookup.c
 @@ -92,11 +92,7 @@ int xdg_user_data_dir(char **ret, const char *suffix) {
@@ -92,7 +92,7 @@ index 1f4331a8bf..4b9a8ae26e 100644
  
                  if (!add)
 diff --git a/src/core/systemd.pc.in b/src/core/systemd.pc.in
-index 693433b34b..5932a21b5b 100644
+index 693433b34b87..5932a21b5be1 100644
 --- a/src/core/systemd.pc.in
 +++ b/src/core/systemd.pc.in
 @@ -38,10 +38,10 @@ systemdsystemconfdir=${systemd_system_conf_dir}
