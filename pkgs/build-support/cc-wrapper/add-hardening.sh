@@ -23,6 +23,15 @@ if [[ -n "${hardeningEnableMap[fortify3]-}" ]]; then
   unset -v "hardeningEnableMap['fortify']"
 fi
 
+# clang cross to bpf workaround: "-target bpf" does not support stackprotector
+for p in "${!params[@]}"; do
+  [[ "${params[p]}" = "-target" ]] || continue
+  [[ "${params[$((p+1))]-}" = "bpf" ]] || continue
+  if (( "${NIX_DEBUG:-0}" >= 1 )); then echo HARDENING: skipping stackprotector for bpf >&2; fi
+  unset -v "hardeningEnableMap['stackprotector']"
+  break
+done
+
 if (( "${NIX_DEBUG:-0}" >= 1 )); then
   declare -a allHardeningFlags=(fortify stackprotector pie pic strictoverflow format)
   declare -A hardeningDisableMap=()
