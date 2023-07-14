@@ -27540,6 +27540,13 @@ with self; {
       url = "mirror://cpan/authors/id/S/SH/SHLOMIF/XML-LibXML-2.0208.tar.gz";
       hash = "sha256-DABrA7+NDrUx+1a9o64VdUylbYiN17noBauesZ1f1lM=";
     };
+    patches = [
+      # for failing 35huge_mode test
+      (fetchpatch {
+        url = "https://github.com/shlomif/perl-XML-LibXML/pull/80.patch";
+        hash = "sha256-MOCNV7Yx1isuobv8R2VMBUlgOFd3XeZKRiJ/TBaEARo=";
+      })
+    ];
     SKIP_SAX_INSTALL = 1;
     buildInputs = [ AlienBuild AlienLibxml2 ]
       ++ lib.optionals stdenv.isDarwin (with pkgs; [ libiconv zlib ]);
