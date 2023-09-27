@@ -9,6 +9,36 @@ with lib; let
   cfg = config.services.anki-sync-server;
   name = "anki-sync-server";
   specEscape = replaceStrings ["%"] ["%%"];
+  usersWithIndexes =
+    lists.imap1 (i: user: {
+      i = i;
+      user = user;
+    })
+    cfg.users;
+  usersWithIndexesFile = filter (x: x.user.passwordFile != null) usersWithIndexes;
+  usersWithIndexesNoFile = filter (x: x.user.passwordFile == null && x.user.password != null) usersWithIndexes;
+  anki-sync-server-run = pkgs.writeShellScriptBin "anki-sync-server-run" ''
+    # When services.anki-sync-server.users.passwordFile is set,
+    # each password file is passed as a systemd credential, which is mounted in
+    # a file system exposed to the service. Here we read the passwords from
+    # the credential files to pass them as environment variables to the Anki
+    # sync server.
+    ${
+      concatMapStringsSep
+      "\n"
+      (x: ''export SYNC_USER${toString x.i}=${strings.escapeShellArg x.user.username}:"''$(cat "''${CREDENTIALS_DIRECTORY}/"${strings.escapeShellArg x.user.username})"'')
+      usersWithIndexesFile
+    }
+    # For users where services.anki-sync-server.users.password isn't set,
+    # export passwords in environment variables in plaintext.
+    ${
+      concatMapStringsSep
+      "\n"
+      (x: ''export SYNC_USER${toString x.i}=${strings.escapeShellArg x.user.username}:${strings.escapeShellArg x.user.password}'')
+      usersWithIndexesNoFile
+    }
+    exec ${cfg.package}/bin/anki --syncserver
+  '';
 in {
   options.services.anki-sync-server = {
     enable = mkEnableOption (lib.mdDoc "anki-sync-server");
@@ -47,18 +77,19 @@ in {
               description = lib.mdDoc "User name accepted by anki-sync-server.";
             };
             password = mkOption {
-              type = str;
+              type = nullOr str;
+              default = null;
               description = lib.mdDoc ''
                 Password accepted by anki-sync-server for the associated username.
                 **WARNING**: This option is **not secure**. This password will
                 be stored in *plaintext* and will be visible to *all users*.
                 See {option}`services.anki-sync-server.users.passwordFile` for
-                a more secure option. Note that this option doesn't support
-                passwords that begin with the `/` character.
+                a more secure option.
               '';
             };
             passwordFile = mkOption {
-              type = path;
+              type = nullOr path;
+              default = null;
               description = lib.mdDoc ''
                 File containing the password accepted by anki-sync-server for
                 the associated username.  Make sure to make readable only by
@@ -74,7 +105,7 @@ in {
   config = mkIf cfg.enable {
     assertions = [
       {
-        assertion = builtins.length cfg.users > 0;
+        assertion = (builtins.length usersWithIndexesFile) + (builtins.length usersWithIndexesNoFile) > 0;
         message = "At least one username-password pair must be set.";
       }
       {
@@ -95,52 +126,22 @@ in {
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
       path = [cfg.package];
-      environment =
-        {
-          SYNC_BASE = "%S/%N";
-          SYNC_HOST = specEscape cfg.host;
-          SYNC_PORT = toString cfg.port;
-        }
-        // (
-          attrsets.mergeAttrsList
-          (lists.imap1
-            (i: user: {"SYNC_USER${toString i}" = ''${specEscape user.username}:${
-                if user ? passwordFile
-                then "%d/${specEscape user.username}"
-                else specEscape user.password
-              }'';})
-            cfg.users)
-        );
+      environment = {
+        SYNC_BASE = "%S/%N";
+        SYNC_HOST = specEscape cfg.host;
+        SYNC_PORT = toString cfg.port;
+      };
 
       serviceConfig = {
         Type = "simple";
         DynamicUser = true;
         StateDirectory = name;
-        ExecStart = "${pkgs.bash}/bin/bash -c ${utils.escapeSystemdExecArg ''
-            # When services.anki-sync-server.users.passwordFile is set above,
-            # we set the "password" in the SYNC_USER* environment variables
-            # to the path of the password file, as exposed to the service.
-            # Since Anki sync server requires passwords to be passed via
-            # environment variable, here we replace each path with the content
-            # of the password file before launching the server.
-            user_vars=$(env | grep -oE '^SYNC_USER[0-9]+')
-            for var in ''$user_vars; do
-              eval "val=\''${''$var}";
-              user=''${val%%:*}
-              pass=''${val#*:}
-              # Only replace passwords that are paths (that begin with `/`).
-              if ! [[ "''$pass" = "''${pass##*/}" ]]; then
-                eval ''$var=''$(printf '%q' "''$user"):''$(printf '%q' ''$(cat "''$pass"))
-              fi
-            done
-            exec ${cfg.package}/bin/anki --syncserver
-          '
-        ''}";
+        ExecStart = "${anki-sync-server-run}/bin/anki-sync-server-run";
         Restart = "always";
         LoadCredential =
           map
-          (user: "${specEscape user.username}:${specEscape (toString user.passwordFile)}")
-          (filter (user: user ? passwordFile) cfg.users);
+          (x: "${specEscape x.user.username}:${specEscape (toString x.user.passwordFile)}")
+          usersWithIndexesFile;
       };
     };
   };
