@@ -26,7 +26,7 @@ with lib; let
     ${
       concatMapStringsSep
       "\n"
-      (x: ''export SYNC_USER${toString x.i}=${strings.escapeShellArg x.user.username}:"''$(cat "''${CREDENTIALS_DIRECTORY}/"${strings.escapeShellArg x.user.username})"'')
+      (x: ''export SYNC_USER${toString x.i}=${escapeShellArg x.user.username}:"''$(cat "''${CREDENTIALS_DIRECTORY}/"${escapeShellArg x.user.username})"'')
       usersWithIndexesFile
     }
     # For users where services.anki-sync-server.users.password isn't set,
@@ -34,7 +34,7 @@ with lib; let
     ${
       concatMapStringsSep
       "\n"
-      (x: ''export SYNC_USER${toString x.i}=${strings.escapeShellArg x.user.username}:${strings.escapeShellArg x.user.password}'')
+      (x: ''export SYNC_USER${toString x.i}=${escapeShellArg x.user.username}:${escapeShellArg x.user.password}'')
       usersWithIndexesNoFile
     }
     exec ${cfg.package}/bin/anki --syncserver
