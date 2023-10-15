@@ -28,7 +28,7 @@ import ./make-test-python.nix ({ pkgs, ... }:
       # Test actual sync. login apparently doesn't remember the endpoint...
       login = col.sync_login('user', 'password', endpoint)
       login.endpoint = endpoint
-      sync = col.sync_collection(login)
+      sync = col.sync_collection(login, False)
       assert sync.required == sync.NO_CHANGES
       # TODO: create an archive with server content including a test card
       # and check we got it?
