@@ -37,7 +37,7 @@ with lib; let
       (x: ''export SYNC_USER${toString x.i}=${escapeShellArg x.user.username}:${escapeShellArg x.user.password}'')
       usersWithIndexesNoFile
     }
-    exec ${cfg.package}/bin/anki --syncserver
+    exec ${cfg.package}/bin/anki-sync-server
   '';
 in {
   options.services.anki-sync-server = {
@@ -45,9 +45,9 @@ in {
 
     package = mkOption {
       type = types.package;
-      default = pkgs.anki-bin;
-      defaultText = literalExpression "pkgs.anki-bin";
-      description = lib.mdDoc "The package to use for the anki command.";
+      default = pkgs.anki-sync-server;
+      defaultText = literalExpression "pkgs.anki-sync-server";
+      description = lib.mdDoc "The package to use for the anki-sync-server command.";
     };
 
     host = mkOption {
