@@ -1,0 +1,25 @@
+From 309fbf615643565be07dc990d8ae3a428868e843 Mon Sep 17 00:00:00 2001
+From: Euan Kemp <euank@euank.com>
+Date: Sun, 15 Oct 2023 10:30:52 +0900
+Subject: [PATCH 2/3] disable autoupdate
+
+---
+ qt/aqt/main.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/qt/aqt/main.py b/qt/aqt/main.py
+index 57b124d15163..2052f4f90822 100644
+--- a/qt/aqt/main.py
++++ b/qt/aqt/main.py
+@@ -1399,6 +1399,8 @@ title="{}" {}>{}</button>""".format(
+     ##########################################################################
+ 
+     def setupAutoUpdate(self) -> None:
++        # nixpkgs patch; updates are managed by nix
++        return
+         from aqt.update import check_for_update
+ 
+         check_for_update()
+-- 
+2.41.0
+

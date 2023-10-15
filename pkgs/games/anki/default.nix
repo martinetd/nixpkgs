@@ -28,21 +28,22 @@
 
 let
   pname = "anki";
-  version = "2.1.66";
-  rev = "70506aeb99d4afbe73321feaf75a2fabaa011d55";
+  version = "23.10beta6";
+  rev = "72e57456ceb1e97a37198d490ea1ca72e38f61f6";
 
   src = fetchFromGitHub {
     owner = "ankitects";
     repo = "anki";
     rev = version;
-    hash = "sha256-eE64i/jTMvipakbQXzKu/dN+dyim7E4M+eP3d9GZhII=";
+    hash = "sha256-BM5V226THeM7jhLeXQwtKghXTMmiFL2hRGT3F6/1DxM=";
     fetchSubmodules = true;
   };
 
   cargoLock = {
     lockFile = ./Cargo.lock;
     outputHashes = {
-      "csv-1.1.6" = "sha256-w728ffOVkI+IfK6FbmkGhr0CjuyqgJnPB1kutMJIUYg=";
+      "burn-0.10.0" = "sha256-D2dHW/axrk7mSNNacD1eQdPas8KjIDrUJS7px+lieqU=";
+      "fsrs-0.1.0" = "sha256-MkxSoaO35Uyhyvgzin99UWu0V0o8pqlXHDT/rRW1fA4=";
       "linkcheck-0.4.1" = "sha256-S93J1cDzMlzDjcvz/WABmv8CEC6x78E+f7nzhsN7NkE=";
       "percent-encoding-iri-2.2.0" = "sha256-kCBeS1PNExyJd4jWfDfctxq6iTdAq69jtxFQgCCQ8kQ=";
     };
@@ -51,7 +52,7 @@ let
 
   yarnOfflineCache = fetchYarnDeps {
     yarnLock = "${src}/yarn.lock";
-    hash = "sha256-3DUiwGTg7Nzd+bPJlc8aUW8bYrl7BF+CcjqkF6nW0qc=";
+    hash = "sha256-tODtV5tqY7AJS4IhA5u5uqew8z4e5zv/fp35Qow35Lk=";
   };
 
   anki-build-python = python3.withPackages (ps: with ps; [
@@ -128,9 +129,9 @@ python3.pkgs.buildPythonApplication {
   inherit src;
 
   patches = [
-    ./patches/gl-fixup.patch
-    ./patches/no-update-check.patch
-    ./patches/skip-formatting-python-code.patch
+    ./patches/0001-aqt-don-t-fixup-libGL.patch
+    ./patches/0002-disable-autoupdate.patch
+    ./patches/0003-Skip-formatting-python-code.patch
   ];
 
   inherit cargoDeps yarnOfflineCache;
