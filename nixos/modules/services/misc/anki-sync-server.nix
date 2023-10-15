@@ -50,16 +50,19 @@ in {
       description = lib.mdDoc "The package to use for the anki-sync-server command.";
     };
 
-    host = mkOption {
+    address = mkOption {
       type = types.str;
-      default = "localhost";
-      description = lib.mdDoc "anki-sync-server host";
+      default = "::1";
+      description = lib.mdDoc ''
+        IP address anki-sync-server listens to.
+        Note host names are not resolved.
+      '';
     };
 
     port = mkOption {
       type = types.port;
       default = 27701;
-      description = lib.mdDoc "anki-sync-server port";
+      description = lib.mdDoc "port anki-sync-server listens to";
     };
 
     openFirewall = mkOption {
@@ -128,7 +131,7 @@ in {
       path = [cfg.package];
       environment = {
         SYNC_BASE = "%S/%N";
-        SYNC_HOST = specEscape cfg.host;
+        SYNC_HOST = specEscape cfg.address;
         SYNC_PORT = toString cfg.port;
       };
 
