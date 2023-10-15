@@ -122,7 +122,7 @@ in
 python3.pkgs.buildPythonApplication {
   inherit pname version;
 
-  outputs = [ "doc" "man" "out" ];
+  outputs = [ "out" "doc" "man" ];
 
   inherit src;
 
