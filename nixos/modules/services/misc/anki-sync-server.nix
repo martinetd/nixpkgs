@@ -111,16 +111,6 @@ in {
         assertion = (builtins.length usersWithIndexesFile) + (builtins.length usersWithIndexesNoFile) > 0;
         message = "At least one username-password pair must be set.";
       }
-      {
-        assertion =
-          (
-            builtins.compareVersions
-            (elemAt (builtins.match ".*-(([0-9]+\\.)*[0-9]+)$" cfg.package.name) 0)
-            "2.1.66"
-          )
-          != -1;
-        message = "anki package <2.1.66 not supported by this module. Earliest supported commit: https://github.com/NixOS/nixpkgs/commit/05727304f8815825565c944d012f20a9a096838a";
-      }
     ];
     networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall [cfg.port];
 
