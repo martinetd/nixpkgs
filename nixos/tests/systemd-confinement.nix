@@ -48,8 +48,13 @@ import ./make-test-python.nix {
       { config.confinement.mode = "chroot-only";
         testScript = ''
           with subtest("chroot-only confinement"):
-              paths = machine.succeed('chroot-exec ls -1 / | paste -sd,').strip()
-              assert_eq(paths, "bin,nix,run")
+              paths = machine.succeed('chroot-exec ls -Am /').strip()
+              assert_eq(paths, "bin, dev, etc, nix, proc, root, run, sys, usr, var")
+              # systemd’s setup_namespace() calls base_filesystem_create()
+              # which creates those usual top level directories.
+              # Check that they're empty.
+              paths = machine.succeed('chroot-exec ls -Am /dev /etc /proc /root /sys /usr /var | paste -sd,').strip()
+              assert_eq(paths, "/dev:,,/etc:,,/proc:,,/root:,,/sys:,,/usr:,,/var:")
               uid = machine.succeed('chroot-exec id -u').strip()
               assert_eq(uid, "0")
               machine.succeed("chroot-exec chown 65534 /bin")
@@ -57,7 +62,8 @@ import ./make-test-python.nix {
       }
       { testScript = ''
           with subtest("full confinement with APIVFS"):
-              machine.fail("chroot-exec ls -l /etc")
+              paths = machine.succeed('chroot-exec ls -Am /etc').strip()
+              assert_eq(paths, "")
               machine.fail("chroot-exec chown 65534 /bin")
               assert_eq(machine.succeed('chroot-exec id -u').strip(), "0")
               machine.succeed("chroot-exec chown 0 /bin")
@@ -80,6 +86,15 @@ import ./make-test-python.nix {
               machine.fail("chroot-exec touch /bin/test")
         '';
       }
+      { config.serviceConfig.DynamicUser = true;
+        testScript = ''
+          with subtest("check if DynamicUser is working"):
+              machine.succeed("chroot-exec ls -l /dev")
+              uid = machine.succeed('chroot-exec id -u').strip()
+              assert uid != "0", "UID of a DynamicUser shouldn't be 0"
+              machine.fail("chroot-exec touch /bin/test")
+        '';
+      }
       (let
         symlink = pkgs.runCommand "symlink" {
           target = pkgs.writeText "symlink-target" "got me\n";
@@ -88,7 +103,8 @@ import ./make-test-python.nix {
         config.confinement.packages = lib.singleton symlink;
         testScript = ''
           with subtest("check if symlinks are properly bind-mounted"):
-              machine.fail("chroot-exec test -e /etc")
+              paths = machine.succeed('chroot-exec ls -Am /etc').strip()
+              assert_eq(paths, "")
               text = machine.succeed('chroot-exec cat ${symlink}').strip()
               assert_eq(text, "got me")
         '';
@@ -180,5 +196,5 @@ import ./make-test-python.nix {
         assert a == b, f"{a} != {b}"
 
     machine.wait_for_unit("multi-user.target")
-  '' + nodes.machine.config.__testSteps;
+  '' + nodes.machine.__testSteps;
 }

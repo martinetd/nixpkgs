@@ -98,8 +98,9 @@ in {
         wantsAPIVFS = lib.mkDefault (config.confinement.mode == "full-apivfs");
       in lib.mkIf config.confinement.enable {
         serviceConfig = {
-          RootDirectory = "/var/empty";
-          TemporaryFileSystem = "/";
+          RuntimeDirectory = [ "confinement/${mkPathSafeName name}" ];
+          RootDirectory = lib.mkForce "/run/confinement/${mkPathSafeName name}";
+          InaccessiblePaths = [ "-+/run/confinement/${mkPathSafeName name}" ];
           PrivateMounts = lib.mkDefault true;
 
           # https://github.com/NixOS/nixpkgs/issues/14645 is a future attempt
@@ -147,16 +148,6 @@ in {
               + " doesn't support restricting bind-mounts to 'ExecStart'."
               + " Please either define a separate service or find a way to run"
               + " commands other than ExecStart within the chroot.";
-    }
-    { assertion = !cfg.serviceConfig.DynamicUser or false;
-      message = "${whatOpt "DynamicUser"}. Please create a dedicated user via"
-              + " the 'users.users' option instead as this combination is"
-              + " currently not supported.";
-    }
-    { assertion = cfg.serviceConfig ? ProtectSystem -> cfg.serviceConfig.ProtectSystem == false;
-      message = "${whatOpt "ProtectSystem"}. ProtectSystem is not compatible"
-              + " with service confinement as it fails to remount /usr within"
-              + " our chroot. Please disable the option.";
     }
   ]) config.systemd.services);
 
