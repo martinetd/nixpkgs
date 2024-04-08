@@ -61,6 +61,10 @@ stdenv.mkDerivation {
 
   inherit (kernel) src;
 
+  patches = [
+    ./0001-perf-parse-Allow-names-to-start-with-digits.patch
+  ];
+
   postPatch = ''
     # Linux scripts
     patchShebangs scripts

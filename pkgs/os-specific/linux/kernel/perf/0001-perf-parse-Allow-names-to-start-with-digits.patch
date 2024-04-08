@@ -1,0 +1,46 @@
+From 97435fab35a7942979ec2063324f335c2d04c431 Mon Sep 17 00:00:00 2001
+From: Dominique Martinet <asmadeus@codewreck.org>
+Date: Sun, 12 Jun 2022 15:15:08 +0900
+Subject: [PATCH] perf parse: Allow names to start with digits
+
+Tracepoints can start with digits, although we don't have many of these:
+
+$ rg -g '*.h' '\bTRACE_EVENT\([0-9]'
+net/mac802154/trace.h
+53:TRACE_EVENT(802154_drv_return_int,
+...
+
+net/ieee802154/trace.h
+66:TRACE_EVENT(802154_rdev_add_virtual_intf,
+...
+
+include/trace/events/9p.h
+124:TRACE_EVENT(9p_client_req,
+...
+
+Just allow names to start with digits too so e.g. perf trace -e '9p:*'
+works
+
+Signed-off-by: Dominique Martinet <asmadeus@codewreck.org>
+---
+ tools/perf/util/parse-events.l | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
+index 4ef4b6f171a0..c50b320ee2c0 100644
+--- a/tools/perf/util/parse-events.l
++++ b/tools/perf/util/parse-events.l
+@@ -158,8 +158,8 @@ event		[^,{}/]+
+ num_dec		[0-9]+
+ num_hex		0x[a-fA-F0-9]+
+ num_raw_hex	[a-fA-F0-9]+
+-name		[a-zA-Z_*?\[\]][a-zA-Z0-9_*?.\[\]!\-]*
+-name_tag	[\'][a-zA-Z_*?\[\]][a-zA-Z0-9_*?\-,\.\[\]:=]*[\']
++name		[a-zA-Z0-9_*?\[\]][a-zA-Z0-9_*?.\[\]!\-]*
++name_tag	[\'][a-zA-Z0-9_*?\[\]][a-zA-Z0-9_*?\-,\.\[\]:=]*[\']
+ name_minus	[a-zA-Z_*?][a-zA-Z0-9\-_*?.:]*
+ drv_cfg_term	[a-zA-Z0-9_\.]+(=[a-zA-Z0-9_*?\.:]+)?
+ /*
+-- 
+2.44.0
+
