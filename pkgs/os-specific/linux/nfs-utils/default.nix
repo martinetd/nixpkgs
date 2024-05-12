@@ -1,6 +1,7 @@
-{ stdenv, fetchurl, fetchpatch, lib, pkg-config, util-linux, libcap, libtirpc, libevent
+{ stdenv, fetchgit, fetchpatch, lib, pkg-config, util-linux, libcap, libtirpc, libevent
 , sqlite, libkrb5, kmod, libuuid, keyutils, lvm2, systemd, coreutils, tcp_wrappers
 , python3, buildPackages, nixosTests, rpcsvc-proto
+, autoconf, automake, libtool, libxml2
 , enablePython ? true
 }:
 
@@ -10,28 +11,31 @@ in
 
 stdenv.mkDerivation rec {
   pname = "nfs-utils";
-  version = "2.6.2";
+  version = "2.7.1-rc7";
 
-  src = fetchurl {
-    url = "mirror://kernel/linux/utils/nfs-utils/${version}/${pname}-${version}.tar.xz";
-    hash = "sha256-UgCHPoHE1hDiRi/CYv4YE18tvni3l5+VrM0VmuZNUBE=";
+  src = fetchgit {
+    url = "git://git.linux-nfs.org/projects/steved/nfs-utils.git";
+    rev = "nfs-utils-2-7-1-rc7";
+    hash = "sha256-DEgQf6+s7IPXT1+mLdugZCoCul6VznPkIdaVzVFuq/I=";
   };
 
   # libnfsidmap is built together with nfs-utils from the same source,
   # put it in the "lib" output, and the headers in "dev"
   outputs = [ "out" "dev" "lib" "man" ];
 
-  nativeBuildInputs = [ pkg-config buildPackages.stdenv.cc rpcsvc-proto ];
+  nativeBuildInputs = [ pkg-config buildPackages.stdenv.cc rpcsvc-proto autoconf automake libtool ];
 
   buildInputs = [
     libtirpc libcap libevent sqlite lvm2
     libuuid keyutils libkrb5 tcp_wrappers
+    libxml2
   ] ++ lib.optional enablePython python3;
 
   enableParallelBuilding = true;
 
   preConfigure =
     ''
+      autoreconf -fi
       substituteInPlace configure \
         --replace '$dir/include/gssapi' ${lib.getDev libkrb5}/include/gssapi \
         --replace '$dir/bin/krb5-config' ${lib.getDev libkrb5}/bin/krb5-config
@@ -68,10 +72,10 @@ stdenv.mkDerivation rec {
       substituteInPlace systemd/nfs-utils.service \
         --replace "/bin/true" "${coreutils}/bin/true"
 
-      substituteInPlace tools/nfsrahead/Makefile.in \
+      substituteInPlace tools/nfsrahead/Makefile.am systemd/Makefile.am \
         --replace "/usr/lib/udev/rules.d/" "$out/lib/udev/rules.d/"
 
-      substituteInPlace utils/mount/Makefile.in \
+      substituteInPlace utils/mount/Makefile.am \
         --replace "chmod 4511" "chmod 0511"
 
       sed '1i#include <stdint.h>' -i support/nsm/rpc.c
