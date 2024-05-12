@@ -18316,11 +18316,11 @@ with pkgs;
   bpftools = callPackage ../os-specific/linux/bpftools { };
 
   bcc = callPackage ../by-name/bc/bcc/package.nix {
-    llvmPackages = llvmPackages_16;
+    llvmPackages = llvmPackages_17;
   };
 
   bpftrace = callPackage ../by-name/bp/bpftrace/package.nix {
-    llvmPackages = llvmPackages_16;
+    llvmPackages = llvmPackages_17;
   };
 
   bpm-tools = callPackage ../tools/audio/bpm-tools { };
