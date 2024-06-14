@@ -1,6 +1,6 @@
 { lib, stdenv, fetchFromGitHub
 , llvmPackages, elfutils, bcc
-, libbpf, libbfd, libopcodes
+, libbpf, libbfd, libopcodes, glibc
 , cereal, asciidoctor
 , cmake, pkg-config, flex, bison
 , util-linux
@@ -41,9 +41,15 @@ stdenv.mkDerivation rec {
     "-DBUILD_TESTING=FALSE"
     "-DLIBBCC_INCLUDE_DIRS=${bcc}/include"
     "-DINSTALL_TOOL_DOCS=OFF"
-    "-DUSE_SYSTEM_BPF_BCC=ON"
+    "-DSYSTEM_INCLUDE_PATHS=${glibc.dev}/include"
   ];
 
+  patches = [
+    # https://github.com/bpftrace/bpftrace/pull/3243
+    ./0001-clang_parser-system_include_paths-allow-overriding-a.patch
+    # https://github.com/bpftrace/bpftrace/pull/3152 (merged)
+    ./0002-With-BTF-users-do-not-need-libc-headers-installed-fo.patch
+  ];
 
   # Pull BPF scripts into $PATH (next to their bcc program equivalents), but do
   # not move them to keep `${pkgs.bpftrace}/share/bpftrace/tools/...` working.

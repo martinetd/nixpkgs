@@ -1,0 +1,63 @@
+From b0546af86a3e043b7d56426248067405e7471290 Mon Sep 17 00:00:00 2001
+From: Dominique Martinet <asmadeus@codewreck.org>
+Date: Fri, 14 Jun 2024 21:56:46 +0900
+Subject: [PATCH 1/4] clang_parser system_include_paths: allow overriding at
+ compile time
+
+While bpftrace depends on libclang it can be installed without a clang
+frontend, so some distributions might want to make these paths fixed as
+they are unlikely to change.
+
+In particular, this is necessary to include system libraries as used by
+older versions of tcpaccept.bt (they now no longer require these since
+#3152, but that illustrate this was a recurring problem)
+---
+ src/CMakeLists.txt   | 6 ++++++
+ src/clang_parser.cpp | 7 +++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 88f5928c8a75..482a1ed7c4cb 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -94,6 +94,12 @@ if (KERNEL_HEADERS_DIR)
+   target_compile_definitions(runtime PUBLIC KERNEL_HEADERS_DIR="${KERNEL_HEADERS_DIR}")
+ endif()
+ 
++set(SYSTEM_INCLUDE_PATHS "" CACHE PATH "Hard-code system include paths (colon separated)")
++if (SYSTEM_INCLUDE_PATHS)
++  MESSAGE(STATUS "Using SYSTEM_INCLUDE_PATHS=${SYSTEM_INCLUDE_PATHS}")
++  target_compile_definitions(runtime PUBLIC SYSTEM_INCLUDE_PATHS="${SYSTEM_INCLUDE_PATHS}")
++endif()
++
+ execute_process(
+   COMMAND git describe --abbrev=4 --dirty --tags
+   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+diff --git a/src/clang_parser.cpp b/src/clang_parser.cpp
+index 8b6689454267..b8b1fd96a662 100644
+--- a/src/clang_parser.cpp
++++ b/src/clang_parser.cpp
+@@ -885,6 +885,12 @@ std::string ClangParser::get_arch_include_path()
+ std::vector<std::string> ClangParser::system_include_paths()
+ {
+   std::vector<std::string> result;
++#ifdef SYSTEM_INCLUDE_PATHS
++  std::istringstream lines(SYSTEM_INCLUDE_PATHS);
++  std::string line;
++  while (std::getline(lines, line, ':'))
++      result.push_back(trim(line));
++#else
+   try
+   {
+     auto clang = "clang-" + std::to_string(LLVM_VERSION_MAJOR);
+@@ -902,6 +908,7 @@ std::vector<std::string> ClangParser::system_include_paths()
+   catch (std::runtime_error &)
+   { // If exec_system fails, just ignore it
+   }
++#endif
+ 
+   if (result.empty())
+     result = { "/usr/local/include", "/usr/include" };
+-- 
+2.44.0
+
