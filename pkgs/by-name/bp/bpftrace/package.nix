@@ -51,6 +51,10 @@ stdenv.mkDerivation rec {
     ./0001-With-BTF-users-do-not-need-libc-headers-installed-fo.patch
     # https://github.com/bpftrace/bpftrace/pull/3262
     ./0001-tools-runqlat-provide-TASK_RUNNING-as-a-define.patch
+    # https://github.com/bpftrace/bpftrace/pull/3242 (merged)
+    ./0001-utils-fix-kernel-headers-not-found-warning.patch
+    # hide warning until we figure something out, -v will show it.
+    ./0001-kernel-headers-don-t-print-warning-without-v.patch
   ];
 
   # Pull BPF scripts into $PATH (next to their bcc program equivalents), but do
