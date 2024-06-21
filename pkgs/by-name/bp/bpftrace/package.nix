@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation rec {
   pname = "bpftrace";
-  version = "0.20.4";
+  version = "0.21.0";
 
   src = fetchFromGitHub {
     owner = "iovisor";
     repo  = "bpftrace";
     rev   = "v${version}";
-    hash  = "sha256-GJSUHMOp3vCWj8C+1mBHcnUgxLUWUz8Jd8wpq7u0q3s=";
+    hash  = "sha256-PxrWxjs5znbGpa8+l0dLH8H1GbD7CT4AiAC3CRAfzxs=";
   };
 
 
@@ -45,14 +45,8 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    # https://github.com/bpftrace/bpftrace/pull/3243 (merged)
-    ./0001-clang_parser-system_include_paths-allow-overriding-a.patch
-    # https://github.com/bpftrace/bpftrace/pull/3152 (merged)
-    ./0001-With-BTF-users-do-not-need-libc-headers-installed-fo.patch
     # https://github.com/bpftrace/bpftrace/pull/3262
     ./0001-tools-runqlat-provide-TASK_RUNNING-as-a-define.patch
-    # https://github.com/bpftrace/bpftrace/pull/3242 (merged)
-    ./0001-utils-fix-kernel-headers-not-found-warning.patch
     # hide warning until we figure something out, -v will show it.
     ./0001-kernel-headers-don-t-print-warning-without-v.patch
   ];
