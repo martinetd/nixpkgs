@@ -45,10 +45,12 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    # https://github.com/bpftrace/bpftrace/pull/3243
+    # https://github.com/bpftrace/bpftrace/pull/3243 (merged)
     ./0001-clang_parser-system_include_paths-allow-overriding-a.patch
     # https://github.com/bpftrace/bpftrace/pull/3152 (merged)
-    ./0002-With-BTF-users-do-not-need-libc-headers-installed-fo.patch
+    ./0001-With-BTF-users-do-not-need-libc-headers-installed-fo.patch
+    # https://github.com/bpftrace/bpftrace/pull/3262
+    ./0001-tools-runqlat-provide-TASK_RUNNING-as-a-define.patch
   ];
 
   # Pull BPF scripts into $PATH (next to their bcc program equivalents), but do
