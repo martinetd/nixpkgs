@@ -180,6 +180,7 @@ buildNpmPackage {
     # directory.
     makeWrapper "${lib.getExe nodejs}" "$out/bin/cryptpad" \
       --add-flags "$out_cryptpad/server.js" \
+      --run "mkdir -p \$HOME/.local/share/cryptpad && cd \$HOME/.local/share/cryptpad" \
       --run "for d in customize.dist lib www scripts; do ${coreutils}/bin/ln -sf \"$out_cryptpad/\$d\" .; done" \
       --run "if ! [ -d customize ]; then \"${lib.getExe nodejs}\" \"$out_cryptpad/scripts/build.js\"; fi"
   '';
