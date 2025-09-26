@@ -156,6 +156,13 @@ buildNpmPackage {
     # Move to install directory manually.
     npm run install:components
     mv www/components "$out_cryptpad/www/"
+    # optimization: replace copies with symlinks...
+    for d in "$out_cryptpad/www/components/"*; do
+      d="''${d##*/}"
+      [ -e "$out_cryptpad/node_modules/$d" ] || continue
+      rm -rf "$out_cryptpad/www/components/$d"
+      ln -Tfs "../../node_modules/$d" "$out_cryptpad/www/components/$d"
+    done
 
     # install OnlyOffice (install-onlyoffice.sh without network)
     mkdir -p "$out_cryptpad/www/common/onlyoffice/dist"
@@ -181,7 +188,7 @@ buildNpmPackage {
     makeWrapper "${lib.getExe nodejs}" "$out/bin/cryptpad" \
       --add-flags "$out_cryptpad/server.js" \
       --run "mkdir -p \$HOME/.local/share/cryptpad && cd \$HOME/.local/share/cryptpad" \
-      --run "for d in customize.dist lib www scripts; do ${coreutils}/bin/ln -sf \"$out_cryptpad/\$d\" .; done" \
+      --run "for d in src customize.dist lib www scripts; do ${coreutils}/bin/ln -sf \"$out_cryptpad/\$d\" .; done" \
       --run "if ! [ -d customize ]; then \"${lib.getExe nodejs}\" \"$out_cryptpad/scripts/build.js\"; fi"
   '';
 
