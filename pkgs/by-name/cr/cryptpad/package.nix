@@ -40,15 +40,13 @@ let
       if oo ? "version" then
         ''
           mkdir -p "$oo_dir"
-          cd "$oo_dir"
-          unzip ${onlyoffice_newfetch oo.version oo.hash}
+          unzip ${onlyoffice_newfetch oo.version oo.hash} -d "$oo_dir"
           echo "${oo.version}" > "$oo_dir/.version"
 
           # Clean up help files and dictionaries as per upstream
           ${lib.optionalString (oo.subdir == "v7") ''
-            rm -rf web-apps/apps/*/main/resources/help
-            rm -rf web-apps/apps/common/main/resources/help/
-            rm -rf dictionaries/
+            rm -rf "$oo_dir"/web-apps/apps/*/main/resources/help
+            rm -rf "$oo_dir"/dictionaries/
           ''}
         ''
       else
@@ -58,7 +56,7 @@ let
           echo "${oo.rev}" > "$oo_dir/.commit"
 
           # Clean up help files as per upstream
-          rm -rf "$oo_dir/web-apps/apps/*/main/resources/help"
+          rm -rf "$oo_dir"/web-apps/apps/*/main/resources/help
         ''
     }
   '';
